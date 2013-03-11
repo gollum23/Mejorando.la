@@ -20,7 +20,14 @@ urlpatterns = patterns('',
     url(r'^podcast/?$', 'website.views.podcast'),
 
     url(r'^(?P<path>conferencias)/?$', 'website.views.all'),
+
+    url(r'^(?P<path>colombia)/?$', 'website.views.all'),
+    url(r'^(?P<path>argentina)/?$', 'website.views.all'),
+    url(r'^(?P<path>peru)/?$', 'website.views.all'),
+    url(r'^(?P<path>chile)/?$', 'website.views.all'),
+    url(r'^(?P<path>mexico)/?$', 'website.views.all'),
     url(r'^(?P<path>espana)/?$', 'website.views.all'),
+
     url(r'^(?P<path>guia-html5)/?$', 'website.views.all'),
     url(r'^(?P<path>privacidad)/?$', 'website.views.all'),
     url(r'^(?P<path>respuesta)/?$', 'website.views.all'),
