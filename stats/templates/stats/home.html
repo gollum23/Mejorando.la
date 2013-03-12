@@ -1,0 +1,29 @@
+{% load staticfiles %}
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Estadísticas de ventas | Mejorando.la</title>
+    <link href="{% static "stats/css/home.css" %}" rel="stylesheet" />
+</head>
+<body>
+    <nav>
+        <ul>
+        {% for curso in cursos %}
+        <li>
+            {% if curso.has_versions %}
+            {{ curso.nombre }}
+            <ul>
+                {% for version in curso.get_versions %}
+                <li><a href="{{ curso.get_stats_url }}{{ forloop.counter }}">{{ forloop.counter }}</a></li>
+                {% endfor %}
+            </ul>
+            {% else %}
+            <li><a href="{{ curso.get_stats_url }}">{{ curso.nombre }}</a></li>
+            {% endif %}
+        </li>
+        {% endfor %}
+        </ul>
+    </nav>
+</body>
+</html>

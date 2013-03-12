@@ -1,0 +1,64 @@
+{% load staticfiles %}
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Estadísticas de ventas | Mejorando.la</title>
+    <link href="{% static "stats/css/home.css" %}" rel="stylesheet" />
+</head>
+<body>
+    <nav>
+        <ul>
+        {% for curso in cursos %}
+        <li>
+            {% if curso.has_versions %}
+            {{ curso.nombre }}
+            <ul>
+                {% for version in curso.get_versions %}
+                <li><a href="{{ curso.get_stats_url }}{{ forloop.counter }}">{{ forloop.counter }}</a></li>
+                {% endfor %}
+            </ul>
+            {% else %}
+            <li><a href="{{ curso.get_stats_url }}">{{ curso.nombre }}</a></li>
+            {% endif %}
+        </li>
+        {% endfor %}
+        </ul>
+    </nav>
+
+    <section>
+        <h1>Estadísticas del {{ curso.nombre }}{% if version %} <em>v{{ version }}</em>{% endif %}</h1>
+
+        <h2>Resumen</h2>
+        <p>Pagos: <strong>{{ pagos }}</strong> Registros: <strong>{{ registros }}</strong> Transacciones: <strong>{{ transac }}</strong></p>
+
+
+        <h2>Detalle</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Nombre</th>
+                    <th>Email</th>
+                    <th>País</th>
+                    <th>Metodo de pago</th>
+                    <th># Plazas</th>
+                    <th># Intentos</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for item in items %}
+                <tr>
+                    <td>{{ item.nombre }}</td>
+                    <td>{{ item.email }}</td>
+                    <td>{{ item.pais }}</td>
+                    <td>{{ item.method }}</td>
+                    <td>{{ item.quantity }}</td>
+                    <td>{{ item.intentos }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </section>
+</body>
+</html>

@@ -2,6 +2,7 @@ from django.db import models
 from django.conf import settings
 from django.utils import simplejson
 from django.db.models.signals import post_save, post_delete
+from django.core.urlresolvers import reverse
 
 import requests
 
@@ -26,6 +27,15 @@ class Curso(models.Model):
 
     def __unicode__(self):
         return self.nombre
+
+    def has_versions(self):
+        return self.get_versions().count() > 1
+
+    def get_versions(self):
+        return self.cursopago_set.values('version').annotate(models.Count('id'))
+
+    def get_stats_url(self):
+        return reverse('stats.views.single', None, [self.slug])
 
     # media del curso
     def get_imagen(self):
