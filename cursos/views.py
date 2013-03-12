@@ -30,8 +30,13 @@ def home(req):
     return render_to_response('cursos/cursos_home.html', {
         'meses': [{
             'fecha': fecha,
-            'cursos': website.models.Curso.objects.filter(fecha__year=fecha.year, fecha__month=fecha.month, activado=True).order_by('-fecha')
-        } for fecha in website.models.Curso.objects.filter(activado=True).dates('fecha', 'month', order='DESC')]
+            'cursos': website.models.Curso.objects.filter(
+                fecha__year=fecha.year,
+                fecha__month=fecha.month,
+                activado=True
+            ).order_by('-fecha')
+        } for fecha in website.models.Curso.objects.filter(
+            activado=True).dates('fecha', 'month', order='DESC')]
     })
 
 
@@ -57,15 +62,34 @@ def curso(req, curso_slug):
                         email = False
 
                 # si ya ha pagado hoy
-                if CursoPago.objects.filter(email=email, curso=curso, charged=True, fecha__gt=datetime.now() - timedelta(days=1)).exists():
+                if CursoPago.objects.filter(
+                        email=email,
+                        curso=curso,
+                        charged=True,
+                        fecha__gt=datetime.now() - timedelta(days=1)).exists():
                     return HttpResponse('ERR ALREADY COMPLETED')
 
-                if CursoPago.objects.filter(email=email, curso=curso, charged=False, fecha__gt=datetime.now() - timedelta(days=1)).count() > 5:
+                if CursoPago.objects.filter(
+                        email=email,
+                        curso=curso,
+                        charged=False,
+                        fecha__gt=datetime.now() - timedelta(days=1)
+                ).count() > 5:
                     return HttpResponse('ERR TOO MANY TRIES')
 
                 if nombre and email and tel and quantity and token:
                     # realizar el cargo con la api de stripe
-                    p = CursoPago(nombre=nombre, email=email, telefono=tel, pais=get_pais(req.META), ip=get_ip(req.META), ua=req.META['HTTP_USER_AGENT'], quantity=quantity, curso=curso, method='card')
+                    p = CursoPago(
+                        nombre=nombre,
+                        email=email,
+                        telefono=tel,
+                        pais=get_pais(req.META),
+                        ip=get_ip(req.META),
+                        ua=req.META['HTTP_USER_AGENT'],
+                        quantity=quantity,
+                        curso=curso,
+                        method='card'
+                    )
                     p.save()
 
                     concept = calculate(int(quantity), curso.precio)
@@ -112,11 +136,26 @@ def curso(req, curso_slug):
                     except ValidationError:
                         email = False
 
-                if CursoPago.objects.filter(email=email, curso=curso, charged=False, fecha__gt=datetime.now() - timedelta(days=1)).count() > 5:
+                if CursoPago.objects.filter(
+                        email=email,
+                        curso=curso,
+                        charged=False,
+                        fecha__gt=datetime.now() - timedelta(days=1)
+                ).count() > 5:
                     return HttpResponse('ERR TOO MANY TRIES')
 
                 if nombre and email and tel and quantity:
-                    p = CursoPago(nombre=nombre, email=email, telefono=tel, pais=get_pais(req.META), ip=get_ip(req.META), ua=req.META['HTTP_USER_AGENT'], quantity=quantity, curso=curso, method=action)
+                    p = CursoPago(
+                        nombre=nombre,
+                        email=email,
+                        telefono=tel,
+                        pais=get_pais(req.META),
+                        ip=get_ip(req.META),
+                        ua=req.META['HTTP_USER_AGENT'],
+                        quantity=quantity,
+                        curso=curso,
+                        method=action
+                    )
                     p.save()
 
                     return HttpResponse('OK')
@@ -154,7 +193,11 @@ def curso(req, curso_slug):
     except Curso.DoesNotExist:
         curso = None
 
-    vs = RequestContext(req, {'curso': curso, 'publishable_key': settings.STRIPE_PUBLISHABLE_KEY})
+    vs = RequestContext(req,
+                        {'curso': curso,
+                         'publishable_key': settings.STRIPE_PUBLISHABLE_KEY
+                         }
+                        )
     try:
         return render_to_response('%s.html' % curso_slug, vs)
     except TemplateDoesNotExist:
@@ -181,7 +224,10 @@ def paypal_ipn(req):
         if r == 'VERIFIED':
             curso = get_object_or_404(Curso, id=req.POST.get('item_number'))
 
-            p = CursoPago.objects.filter(email=req.POST.get('payer_email'), curso=curso)
+            p = CursoPago.objects.filter(
+                email=req.POST.get('payer_email'),
+                curso=curso
+            )
 
             if p.exists():
                 p = p[0]

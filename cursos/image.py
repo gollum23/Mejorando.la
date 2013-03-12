@@ -2,6 +2,7 @@ from django.conf import settings
 import Image
 import os
 
+
 def resize(size, imagen):
     path = os.path.join(settings.MEDIA_ROOT, str(imagen))
 

@@ -12,18 +12,18 @@ import time
 
 
 class Curso(models.Model):
-    nombre         = models.TextField()
-    slug        = models.TextField()
-    precio         = models.IntegerField()
-    pais           = models.CharField(max_length=50)
-    direccion   = models.TextField()
-    mapa         = models.CharField(max_length=50, blank=True)
-    imagen      = models.ImageField(upload_to='cursos_curso')
+    nombre = models.TextField()
+    slug = models.TextField()
+    precio = models.IntegerField()
+    pais = models.CharField(max_length=50)
+    direccion = models.TextField()
+    mapa = models.CharField(max_length=50, blank=True)
+    imagen = models.ImageField(upload_to='cursos_curso')
     descripcion = models.TextField()
-    info_pago   = models.TextField()
-    activado    = models.BooleanField(default=False)
-    version     = models.IntegerField(default=1)
-    mailchimp   = models.CharField(max_length=100, blank=True)
+    info_pago = models.TextField()
+    activado = models.BooleanField(default=False)
+    version = models.IntegerField(default=1)
+    mailchimp = models.CharField(max_length=100, blank=True)
 
     def __unicode__(self):
         return self.nombre
@@ -42,15 +42,22 @@ class Curso(models.Model):
         return '%s%s' % (settings.MEDIA_URL, self.imagen)
 
     def get_map_link(self):
-        return 'https://maps.google.com/maps?q=%s, %s' % (self.direccion, self.pais)
+        return 'https://maps.google.com/maps?q=%s, %s' % (
+            self.direccion, self.pais)
 
     def get_map_image(self):
         return 'http://maps.googleapis.com/maps/api/staticmap?size=335x125&maptype=roadmap&markers=icon:http://mejorando.la/nuevaVenta/images/marker.png%7C' + self.mapa + '&zoom=17&sensor=false'
 
     # variables externas del curso
-    def dias(self):      return CursoDia.objects.filter(curso=self)
-    def docentes(self):  return CursoDocente.objects.filter(cursos=self)
-    def registros(self): return CursoRegistro.objects.filter(curso=self)
+    def dias(self):
+        return CursoDia.objects.filter(curso=self)
+
+    def docentes(self):
+        return CursoDocente.objects.filter(cursos=self)
+
+    def registros(self):
+        return CursoRegistro.objects.filter(curso=self)
+
     def fecha(self):
         dias = CursoDia.objects.filter(curso=self)
 
@@ -68,50 +75,71 @@ class Curso(models.Model):
 
     def pagados(self):
         return CursoPago.objects.filter(charged=True, curso=self)
+
     def no_pagados(self):
         return CursoPago.objects.filter(charged=False, curso=self)
+
     def registros(self):
         return CursoRegistro.objects.filter(pago__curso=self)
-    def vendidos(self):
-        result = CursoPago.objects.filter(charged=True, curso=self).aggregate(models.Sum('quantity'))['quantity__sum']
 
-        if result is None: result = 0
+    def vendidos(self):
+        result = CursoPago.objects.filter(
+            charged=True, curso=self
+        ).aggregate(models.Sum('quantity'))['quantity__sum']
+
+        if result is None:
+            result = 0
         return result
+
     def noregistros(self):
         return self.vendidos() - self.registros().count()
 
     def stripe_total(self):
         return self.stripe_pagados().count() + self.stripe_no_pagados().count()
+
     def stripe_pagados(self):
         return CursoPago.objects.filter(charged=True, method='card', curso=self)
+
     def stripe_no_pagados(self):
         return CursoPago.objects.filter(charged=False, method='card', curso=self)
+
     def stripe_registros(self):
         return CursoRegistro.objects.filter(pago__curso=self, pago__method='card')
 
     def paypal_total(self):
         return self.paypal_pagados().count() + self.paypal_no_pagados().count()
+
     def paypal_pagados(self):
         return CursoPago.objects.filter(charged=True, method='paypal', curso=self)
+
     def paypal_no_pagados(self):
         return CursoPago.objects.filter(charged=False, method='paypal', curso=self)
+
     def paypal_registros(self):
         return CursoRegistro.objects.filter(pago__curso=self, pago__method='paypal')
 
+
     def deposit_total(self):
         return self.deposit_pagados().count() + self.deposit_no_pagados().count()
+
     def deposit_pagados(self):
         return CursoPago.objects.filter(charged=True, method='deposit', curso=self)
+
     def deposit_no_pagados(self):
         return CursoPago.objects.filter(charged=False, method='deposit', curso=self)
+
     def deposit_registros(self):
         return CursoRegistro.objects.filter(pago__curso=self, pago__method='deposit')
+
 
     
     def regions(self):
         r = []
 
-        for p in CursoRegistro.objects.filter(pago__curso=self, pago__charged=True).values('pago__pais').annotate(models.Count('id')):
+        for p in CursoRegistro.objects.filter(
+                pago__curso=self,
+                pago__charged=True
+        ).values('pago__pais').annotate(models.Count('id')):
             r.append([p['pago__pais'], p['id__count']])
         
         return simplejson.dumps(r)
